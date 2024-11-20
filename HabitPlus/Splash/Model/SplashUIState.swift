@@ -14,4 +14,3 @@ enum SplashUIState {
     case error(message:String)
 }
 
-
