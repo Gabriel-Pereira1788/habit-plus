@@ -23,7 +23,7 @@ struct SignInView: View {
                                 .scaledToFit()
                                 .padding(.horizontal, 48)
                             
-                            Text("Login")
+                            Text(viewModel.token)
                                 .foregroundColor(.orange)
                                 .font(Font.system(.title).bold())
                                 .padding(.bottom,8)
@@ -69,9 +69,9 @@ extension SignInView {
             LoadingButtonView(action: {
                 viewModel.login()
             },
-                              disabled: viewModel.isDisabled(),
-                              showProgress: self.viewModel.uiState == SignInUIState.loading,
-                              text: "Entrar")
+              disabled: viewModel.isDisabled(),
+              showProgress: self.viewModel.uiState == SignInUIState.loading,
+              text: "Entrar")
             
         }.padding(20)
     }
@@ -102,6 +102,6 @@ extension SignInView {
 
 
 #Preview {
-    SignInView(viewModel: SignInViewModel())
+    SignInView(viewModel: SignInViewModel(interactor: SignInInteractor()))
 }
 

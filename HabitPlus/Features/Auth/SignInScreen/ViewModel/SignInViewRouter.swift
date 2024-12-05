@@ -13,7 +13,7 @@ enum SignInViewRouter {
     }
     
     static func makeSignUpView(routerPublisher: PassthroughSubject<AuthRouterUIState,Never>) -> some View {
-        let viewModel = SignUpViewModel()
+        let viewModel = SignUpViewModel(interactor: SignUpInteractor())
         viewModel.setRouterPublisher(routerPublisher)
         
         return SignUpView(viewModel:viewModel)

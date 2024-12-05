@@ -14,7 +14,7 @@ struct SignUpView:View {
     
     var body: some View {
         ZStack {
-            if case SignUpUIState.none = viewModel.uiState {
+            
                 ScrollView(showsIndicators:false){
                     VStack(alignment: .center,spacing: 10) {
                         
@@ -29,7 +29,6 @@ struct SignUpView:View {
                     
                     
                 }.frame(maxHeight:.infinity)
-            }
             
             
             if case SignUpUIState.error(let msg) = viewModel.uiState {
@@ -86,5 +85,5 @@ extension SignUpView {
 }
 
 #Preview {
-    SignUpView(viewModel:SignUpViewModel())
+    SignUpView(viewModel:SignUpViewModel(interactor: SignUpInteractor()))
 }

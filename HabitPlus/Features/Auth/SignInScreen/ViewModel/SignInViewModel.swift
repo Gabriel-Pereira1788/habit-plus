@@ -11,19 +11,53 @@ import SwiftUI
 
 class SignInViewModel: ObservableObject {
     @Published var uiState: SignInUIState = .none
+    @Published var token = "Teste Token"
     @Published var form:[KeySignInForm:String] = [
         .email:"",
         .password:""
     ]
     
     private var routerPublisher:PassthroughSubject<AuthRouterUIState,Never>!
-
+    private let interactor:SignInInteractor
+    
+    private var cancellableRequest: AnyCancellable?
+    private var fetchAuthCancellable: AnyCancellable?
+    
+    init(interactor:SignInInteractor) {
+        self.interactor = interactor
+        
+         fetchAuthCancellable = interactor.fetchAuth()
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { value in
+            self.token = value?.idToken ?? "Sem token"
+        })
+    }
+    
+    deinit {
+        cancellableRequest?.cancel()
+        fetchAuthCancellable?.cancel()
+    }
     
     func login(){
         uiState = .loading
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.routerPublisher.send(AuthRouterUIState.goToHomeView)
+        let signInData = SignInRequest(email: form[.email]!, password: form[.password]!)
+        cancellableRequest = interactor.login(loginRequest:signInData).sink { completion in
+            switch (completion) {
+            case .failure(let appError):
+                self.uiState = SignInUIState.error(message: appError.message)
+                break
+            case .finished:
+                break
+            }
+            
+        } receiveValue: { success in
+            print(success)
+            let auth = UserAuth(idToken: success.accessToken, refreshToken: success.refreshToken, expires: success.expires, tokenType: success.tokenType)
+            
+            self.interactor.insertAuth(userAuth: auth)
+            self.routerPublisher.send(.goToHomeView)
         }
+        
     }
     
     func setRouterPublisher(_ toRouterPubilsher:PassthroughSubject<AuthRouterUIState,Never>) {
@@ -34,7 +68,7 @@ class SignInViewModel: ObservableObject {
 
 extension SignInViewModel {
     func homeView() -> some View {
-         return SignInViewRouter.makeHomeView()
+        return SignInViewRouter.makeHomeView()
     }
     
     func signInView() -> some View {
@@ -55,7 +89,7 @@ extension SignInViewModel {
         case .email:
             return form[.email]!.isEmail()
         case .password:
-            return form[.password]!.count > 8
+            return form[.password]!.count >= 8
         }
     }
     
