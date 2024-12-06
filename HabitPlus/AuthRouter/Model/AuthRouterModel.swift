@@ -8,5 +8,6 @@
 enum AuthRouterUIState {
     case goToHomeView
     case goToSignInView
+    case loading
 }
 

@@ -22,7 +22,7 @@ class AuthLocalDataSource {
     
     func getUserAuth() -> Future <UserAuth?,Never> {
         let userAuth:UserAuth? = localDataSource.readValue(forKey: "user_key")
-        
+        print(userAuth?.idToken ?? "NO TOKEN")
         return Future { promise in
             promise(.success(userAuth))
             

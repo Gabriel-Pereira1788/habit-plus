@@ -11,7 +11,6 @@ import SwiftUI
 
 class SignInViewModel: ObservableObject {
     @Published var uiState: SignInUIState = .none
-    @Published var token = "Teste Token"
     @Published var form:[KeySignInForm:String] = [
         .email:"",
         .password:""
@@ -21,21 +20,13 @@ class SignInViewModel: ObservableObject {
     private let interactor:SignInInteractor
     
     private var cancellableRequest: AnyCancellable?
-    private var fetchAuthCancellable: AnyCancellable?
     
     init(interactor:SignInInteractor) {
         self.interactor = interactor
-        
-         fetchAuthCancellable = interactor.fetchAuth()
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { value in
-            self.token = value?.idToken ?? "Sem token"
-        })
     }
     
     deinit {
         cancellableRequest?.cancel()
-        fetchAuthCancellable?.cancel()
     }
     
     func login(){
@@ -71,7 +62,7 @@ extension SignInViewModel {
         return SignInViewRouter.makeHomeView()
     }
     
-    func signInView() -> some View {
+    func signUpView() -> some View {
         return SignInViewRouter.makeSignUpView(routerPublisher: routerPublisher)
     }
 }

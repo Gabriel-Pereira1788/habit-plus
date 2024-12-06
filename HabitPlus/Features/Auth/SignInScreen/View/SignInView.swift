@@ -23,7 +23,7 @@ struct SignInView: View {
                                 .scaledToFit()
                                 .padding(.horizontal, 48)
                             
-                            Text(viewModel.token)
+                            Text("Login")
                                 .foregroundColor(.orange)
                                 .font(Font.system(.title).bold())
                                 .padding(.bottom,8)
@@ -86,7 +86,7 @@ extension SignInView {
             
             ZStack {
                 NavigationLink(
-                    destination:viewModel.signInView(),
+                    destination:viewModel.signUpView(),
                     tag:1,
                     selection:$action,
                     label:{
