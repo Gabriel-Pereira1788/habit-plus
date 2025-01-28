@@ -55,6 +55,7 @@ class SignUpViewModel: ObservableObject {
             } receiveValue: { created in
                 if(created) {
                     self.onSignIn()
+                    
                 }
             }
         
@@ -81,6 +82,9 @@ extension SignUpViewModel {
                 }
             } receiveValue: { response in
                 self.routerPublisher.send(.goToHomeView)
+                let auth = UserAuth(idToken: response.accessToken, refreshToken: response.refreshToken, expires:Date().timeIntervalSince1970 + Double(response.expires), tokenType: response.tokenType)
+                
+                self.interactor.insertAuth(userAuth: auth)
                 self.uiState = .success
             }
     }

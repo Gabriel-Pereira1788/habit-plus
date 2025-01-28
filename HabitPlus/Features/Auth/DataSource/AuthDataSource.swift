@@ -30,6 +30,9 @@ class AuthDataSource {
                             promise(.failure(AppError.response(message: response?.detail ?? "Erro desconhecido no servidor.")))
                         }
                     }
+                    
+                    promise(.failure(AppError.response(message: "Erro desconhecido no servidor.")))
+                    
                     break
                 }
                 
@@ -67,6 +70,7 @@ class AuthDataSource {
                             promise(.failure(AppError.response(message: response?.detail?.message ?? "Erro desconhecido no servidor.")))
                         }
                     }
+                    promise(.failure(AppError.response(message: "Erro desconhecido no servidor.")))
                     break
                 }
             }

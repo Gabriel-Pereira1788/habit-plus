@@ -8,7 +8,7 @@
 struct UserAuth:Codable {
     var idToken:String
     var refreshToken:String
-    var expires: Int = 0
+    var expires: Double = 0
     var tokenType:String
     
     enum CodingKeys:String,CodingKey {

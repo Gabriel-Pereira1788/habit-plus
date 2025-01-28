@@ -5,6 +5,8 @@ enum EndPoint: String {
     case base = "https://habitplus-api.tiagoaguiar.co"
     case users = "/users"
     case login = "/auth/login"
+    case refreshToken = "/auth/refresh-token"
+    case habits = "/users/me/habits"
 }
 
 enum Result {
@@ -22,6 +24,8 @@ enum NetworkError {
 enum HttpMethod:String {
     case post = "POST"
     case get = "GET"
+    case put = "PUT"
+    case delete = "DELETE"
 }
 
 enum ContentType:String {
@@ -31,7 +35,7 @@ enum ContentType:String {
 
 class WebService {
     
-     static func getUrlRequest(endPoint:EndPoint) -> URLRequest? {
+    static func getUrlRequest(endPoint:EndPoint) -> URLRequest? {
         guard let url = URL(string:"\(EndPoint.base.rawValue)\(endPoint.rawValue)") else {
             return nil
         }
@@ -42,42 +46,57 @@ class WebService {
         
         guard var urlRequest = urlRequest else {return}
         
-        urlRequest.httpMethod = method.rawValue
-        urlRequest.setValue(contentType.rawValue, forHTTPHeaderField: "accept")
-        urlRequest.setValue(contentType.rawValue, forHTTPHeaderField: "Content-Type")
+        let userAuthCancellable = AuthLocalDataSource.shared.getUserAuth().sink {userAuth in
+            if let userAuth {
+                urlRequest.setValue("\(userAuth.tokenType) \(userAuth.idToken)", forHTTPHeaderField: "Authorization")
+            }
+            urlRequest.httpMethod = method.rawValue
+            urlRequest.setValue(contentType.rawValue, forHTTPHeaderField: "accept")
+            urlRequest.setValue(contentType.rawValue, forHTTPHeaderField: "Content-Type")
             
-        if let body = body {
-            urlRequest.httpBody = body
-        }
-        
-        
-        
-        let task = URLSession.shared.dataTask(with: urlRequest) {data,response,error in
-            
-            guard let data = data, error == nil else {
-                
-                completion(.failure(.internalServerError, nil))
-                return
+            if let body = body {
+                urlRequest.httpBody = body
             }
             
-            if let res = response as? HTTPURLResponse {
-                switch res.statusCode {
-                case 400:
-                    completion(.failure(.badRequest, data))
-                    break
-                case 401:
-                    completion(.failure(.unauthorized, data))
-                    break
-                case 200:
-                    completion(.success(data))
-                    break
-                default:
-                    break
+            
+            
+            let task = URLSession.shared.dataTask(with: urlRequest) {data,response,error in
+                
+                guard let data = data, error == nil else {
+                    
+                    completion(.failure(.internalServerError, nil))
+                    return
+                }
+                
+                if let res = response as? HTTPURLResponse {
+                    switch res.statusCode {
+                    case 400:
+                        completion(.failure(.badRequest, data))
+                        break
+                    case 401:
+                        completion(.failure(.unauthorized, data))
+                        break
+                    case 200:
+                        completion(.success(data))
+                        break
+                    default:
+                        break
+                    }
                 }
             }
+            
+            task.resume()
         }
         
-        task.resume()
+        
+    }
+    
+    static func call(method:HttpMethod,endPoint:EndPoint, completion:@escaping (Result) -> Void){
+        
+        
+        guard let urlRequest = getUrlRequest(endPoint: endPoint) else {return}
+        call(method: method,contentType: .json, urlRequest: urlRequest, body: nil, completion: completion)
+        
     }
     
     static func call<T:Encodable>(method:HttpMethod,endPoint:EndPoint,body:T, completion:@escaping (Result) -> Void){
